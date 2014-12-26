@@ -1,0 +1,14 @@
+IF NOT EXISTS(SELECT * FROM sys.tables where name = 'UpdateLogs')
+BEGIN
+	CREATE TABLE UpdateLogs 
+	(
+		UpdateLogId INT NOT NULL IDENTITY(1,1) PRIMARY KEY
+		,ProductName VARCHAR(50) NOT NULL
+		,Major INT NOT NULL
+		,Minor INT NOT NULL
+		,Patch INT NOT NULL
+		,DateApplied DATETIME2(2) NOT NULL DEFAULT(GETUTCDATE())
+	) 
+
+
+END
