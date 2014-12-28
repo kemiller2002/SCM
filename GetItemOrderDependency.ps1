@@ -63,32 +63,41 @@ $GetReferencingEntities = {
 
     @{
         Parent = $itemDetails
-        Children = $executeReader.Invoke($statement, $PopulateItemObject)
+        Children = @($executeReader.Invoke($statement, $PopulateItemObject))
     }
 }
 
-$BuildNameList = 
-{
-    param($items)
+$LookUpDependencies = {
+    param(
+        $items,
+        $currentItem
+    )
     
-    $items.Children | foreach {
-        $BuildNameList.Invoke($_)
+    foreach($item in $items.Children) 
+    {
+        $LookUpDependencies.Invoke($items, $_)
     }
 
-    $items.Parent
+    $currentItem.Parent
 
+}
+
+$BuildNameList = {
+    param ($items)
+    
+    $items | foreach{$LookUpDependencies.Invoke($items, $_)}
 }
 
 
 
-$objectGrouping = "FN,V,P".Split(',') | 
+#$items = 
+"FN,V,P".Split(',') | 
     foreach{ $GetObjectlist.Invoke($ExecuteReader, $_) } | 
-    #foreach {Write-Host $_} |
     foreach {$GetReferencingEntities.Invoke($ExecuteReader, $_)} |
-    Group-Object $_.Parent.Type
+    Group-Object {$_.Parent.Type} | 
+    foreach{$BuildNameList.Invoke($_.Group)} | 
+    foreach{Write-Host $_.Object}
+    #
 
 
-    
- 
-
-
+#Write-Host "$($items[0].Name)"
