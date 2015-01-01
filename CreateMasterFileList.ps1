@@ -2,6 +2,7 @@
     [string]  $pathToDataFiles
     ,[string] $connectionString
     ,[string] $database
+    ,[string] $exportFile
 )
     
 $scriptpath = $MyInvocation.MyCommand.Path
@@ -46,13 +47,17 @@ $GetAllFiles = {
 $MakeHeader = {
     param($fileName)
 "
+USE $database
+
 GO
+
 RAISERROR('**********************************************************************************', 0, 0) WITH NOWAIT
 RAISERROR('*', 0, 0) WITH NOWAIT
 RAISERROR('* Starting Migration of: $fileName', 0, 0) WITH NOWAIT
 RAISERROR('*', 0, 0) WITH NOWAIT
 RAISERROR('**********************************************************************************', 0, 0) WITH NOWAIT
-  
+
+GO
 "
 
 }
@@ -60,12 +65,15 @@ RAISERROR('*********************************************************************
 $MakeFooter = {
     param($fileName)
 "
+GO
 
 RAISERROR('**********************************************************************************', 0, 0) WITH NOWAIT
 RAISERROR('*', 0, 0) WITH NOWAIT
 RAISERROR('* Ending Migration of: $fileName', 0, 0) WITH NOWAIT
 RAISERROR('*', 0, 0) WITH NOWAIT
 RAISERROR('**********************************************************************************', 0, 0) WITH NOWAIT
+
+GO
    
 "
     
@@ -73,8 +81,14 @@ RAISERROR('*********************************************************************
 }
 
 
-$GetAllFiles.Invoke($pathToDataFiles) | foreach {
+$contents = $GetAllFiles.Invoke($pathToDataFiles) | foreach {
     $MakeHeader.Invoke($_)
-    Get-Content $_
+    
+    if(Test-Path $_){
+        Get-Content $_
+    }
+
     $MakeFooter.Invoke($_)
-}
+} 
+
+Set-Content $exportFile $contents

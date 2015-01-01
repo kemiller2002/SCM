@@ -4,7 +4,7 @@
 
 $ExecuteReader = {
     param ($statement, $fnReader)
-    
+
     $connection = New-Object System.Data.SqlClient.SqlConnection
     $connection.ConnectionString = $connectionString
     $connection.Open()
@@ -15,17 +15,26 @@ $ExecuteReader = {
     $command = New-Object System.Data.SqlClient.SqlCommand
     $command.Connection = $connection
     $command.CommandText = $statement
-
-    $reader = $command.ExecuteReader()
+try{
+        $reader = $command.ExecuteReader()
     
-    while ($reader.Read()) 
-    {
-        $fnReader.Invoke($reader)
+        while ($reader.Read()) 
+        {
+            $fnReader.Invoke($reader)
+        }
     }
+    catch [System.Exception] {
+         $exception = New-Object System.Exception "There was a problem with executing the following sql statement.
+            This could be a problem with an out of date stored procedure which during recompile
+            exposed fields or tables which no longer exist: $statement" $_
 
-    $reader.Dispose()
-    $command.Dispose()
-    $connection.Dispose()
+            throw $exception
+    }
+    finally {
+        $reader.Dispose()
+        $command.Dispose()
+        $connection.Dispose()
+    }   
 }
 
 $PopulateItemObject = {
