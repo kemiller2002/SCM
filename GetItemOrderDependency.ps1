@@ -15,7 +15,7 @@ $ExecuteReader = {
     $command = New-Object System.Data.SqlClient.SqlCommand
     $command.Connection = $connection
     $command.CommandText = $statement
-try{
+    try{
         $reader = $command.ExecuteReader()
     
         while ($reader.Read()) 
@@ -96,7 +96,7 @@ $LookUpDependencies = {
     
     foreach($item in $items.Children) 
     {
-        $LookUpDependencies.Invoke($items, $_)
+        $LookUpDependencies.Invoke($item, $_) #changed items to item
     }
 
     $currentItem.Parent
@@ -112,6 +112,6 @@ $BuildNameList = {
 $databaseObjectTypes | 
     foreach{ $GetObjectlist.Invoke($ExecuteReader, $_) } | 
     foreach {$GetReferencingEntities.Invoke($ExecuteReader, $_)} |
-    Group-Object {$_.Parent.Type} | 
+    Group-Object {$_.Parent.Type}  | 
     foreach{$BuildNameList.Invoke($_.Group)} 
 }
