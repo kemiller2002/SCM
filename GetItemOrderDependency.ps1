@@ -17,18 +17,25 @@ $ExecuteReader = {
     $command.CommandText = $statement
     try{
         $reader = $command.ExecuteReader()
-    
-        while ($reader.Read()) 
-        {
-            $fnReader.Invoke($reader)
+       
+        if($reader.HasRows){
+            while ($reader.Read()) 
+            {
+                $fnReader.Invoke($reader)
+            }
         }
     }
     catch [System.Exception] {
          $exception = New-Object System.Exception "There was a problem with executing the following sql statement.
             This could be a problem with an out of date stored procedure which during recompile
-            exposed fields or tables which no longer exist: $statement" $_
+            exposed fields or tables which no longer exist: $statement
 
-            throw $exception
+
+            $($_.Message)"
+         
+         #$Error.Add($exception)
+
+         throw $exception
     }
     finally {
         $reader.Dispose()
@@ -72,11 +79,11 @@ $GetReferencingEntities = {
 		JOIN sys.objects po ON r.fkeyid = po.object_id 
 		JOIN sys.schemas ps ON po.schema_id = ps.schema_id
 		WHERE 
-			po.Name = '$($itemDetails.Schema)'
+			po.Name = '$($itemDetails.Object)'
 			AND 
-			ps.Name = '$($itemDetails.Object)'"}
+			ps.Name = '$($itemDetails.Schema)'"}
 
-        default {"SELECT DISTINCT referenced_schema_name, referenced_entity_name FROM 
+        default {"SELECT DISTINCT referenced_schema_name, referenced_entity_name, type FROM 
             sys.dm_sql_referenced_entities ('$($itemDetails.Schema).$($itemDetails.Object)','OBJECT') x 
 	        JOIN Sys.objects o ON x.referenced_id  = o.object_id
 	        AND o.type IN ('$($itemDetails.Type)')"}

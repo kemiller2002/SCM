@@ -13,6 +13,9 @@ $GetPath = {
          "FN" {"Funtions"}
          "V"  {"Views"}
          "P"  {"Stored Procedures"}
+         "SQ" {"Service Queue"}
+         "TF" {"SQL Table Valued Function"}
+         "TR" {"SQL Trigger"}
     }
 
     "$pathToDataFiles\$path"
@@ -54,4 +57,4 @@ function GetSqlFileList
         $MakeListForItem.Invoke($updateItemGroup, $allItemGroup, $pathToDataFiles)
     }
     $masterList 
-}
+}      r tte
